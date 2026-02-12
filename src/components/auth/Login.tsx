@@ -3,28 +3,35 @@ import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useAuth } from '../../contexts/AuthContext'
 import { AuthCard } from '../ui/AuthCard'
+import { useNotification } from '../../contexts/NotificationContext'
 
 export const Login = () => {
   const { signIn } = useAuth()
   const navigate = useNavigate()
+  const { showError } = useNotification()
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [showPassword, setShowPassword] = useState(false)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<string | null>(null)
+  const [success, setSuccess] = useState<string | null>(null)
 
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault()
     setError(null)
+    setSuccess(null)
     setLoading(true)
     try {
       await signIn(email, password)
-      navigate('/dashboard')
+      setSuccess('Login successful')
+      setTimeout(() => {
+        navigate('/dashboard', { state: { welcome: true } })
+      }, 1500)
     } catch (err) {
       const message =
         err instanceof Error ? err.message : 'Failed to sign in. Please try again.'
       setError(message)
-    } finally {
+      showError('Wrong credentials')
       setLoading(false)
     }
   }
@@ -43,6 +50,7 @@ export const Login = () => {
       onSubmit={handleSubmit}
       loading={loading}
       error={error}
+      success={success}
       submitLabel={loading ? 'Signing in…' : 'Sign in'}
       emailId="login-email"
       passwordId="login-password"

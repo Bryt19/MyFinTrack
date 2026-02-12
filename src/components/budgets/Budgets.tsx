@@ -6,6 +6,7 @@ import { categoryService, type Category } from '../../services/categoryService'
 import { userSettingsService } from '../../services/userSettingsService'
 import { formatCurrency } from '../../utils/formatCurrency'
 import { ConfirmModal } from '../ui/ConfirmModal'
+import { useNotification } from '../../contexts/NotificationContext'
 
 type BudgetWithCategory = Budget & { categories: { id: string; name: string } | null }
 
@@ -18,6 +19,7 @@ function getMonthRange() {
 
 export const Budgets = () => {
   const { user } = useAuth()
+  const { showSuccess } = useNotification()
   const [budgets, setBudgets] = useState<BudgetWithCategory[]>([])
   const [categories, setCategories] = useState<Category[]>([])
   const [currency, setCurrency] = useState('USD')
@@ -65,6 +67,7 @@ export const Budgets = () => {
       await budgetService.create({ userId: user.id, categoryId: categoryId || (categories[0]?.id ?? ''), amount: num, period: 'monthly', startDate, endDate })
       setOpen(false)
       setAmount('')
+      showSuccess('Budget successfully added')
       void load()
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to add budget.') }
     finally { setSaving(false) }

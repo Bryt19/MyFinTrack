@@ -120,7 +120,15 @@ export const transactionService = {
       .from('receipts')
       .upload(path, file)
 
-    if (uploadError) throw uploadError
+    if (uploadError) {
+      // Provide user-friendly error message for missing bucket
+      if (uploadError.message?.includes('Bucket not found')) {
+        throw new Error(
+          'Receipt storage is not configured. Please contact support or set up the storage bucket in Supabase.'
+        )
+      }
+      throw uploadError
+    }
 
     const {
       data: { publicUrl },

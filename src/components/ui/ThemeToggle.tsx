@@ -35,7 +35,7 @@ export function ThemeToggle({ checked, onChange, label }: ThemeToggleProps) {
         onMouseUp={() => setIsPressed(false)}
         onMouseLeave={() => setIsPressed(false)}
         className={cn(
-          'group relative h-8 w-14 rounded-full p-1 transition-all duration-500 ease-out',
+          'group relative h-6 w-10 sm:h-8 sm:w-14 rounded-full p-1 transition-all duration-500 ease-out',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card-bg)]',
           'touch-manipulation',
           checked ? 'bg-[var(--text)]' : 'bg-[var(--text-muted)]/20'
@@ -52,10 +52,10 @@ export function ThemeToggle({ checked, onChange, label }: ThemeToggleProps) {
         {/* Thumb */}
         <div
           className={cn(
-            'relative h-6 w-6 rounded-full shadow-lg transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]',
+            'relative h-4 w-4 sm:h-6 sm:w-6 rounded-full shadow-lg transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]',
             'bg-[var(--card-bg)]',
-            checked ? 'translate-x-6' : 'translate-x-0',
-            isPressed && 'scale-90 duration-150'
+            checked ? 'translate-x-4 sm:translate-x-6' : 'translate-x-0',
+            isPressed ? 'scale-90 duration-150' : ''
           )}
         >
           {/* Thumb inner shine */}

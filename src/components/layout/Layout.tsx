@@ -1,4 +1,4 @@
-import { Outlet, Link } from "react-router-dom";
+import { Outlet, Link, useLocation, useNavigate } from "react-router-dom";
 import {
   BarChart3,
   ClipboardList,
@@ -6,6 +6,7 @@ import {
   LogOut,
   Menu,
   PiggyBank,
+  Settings,
   User,
   Wallet,
 } from "lucide-react";
@@ -14,6 +15,7 @@ import { useTheme } from "../../contexts/ThemeContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { ConfirmModal } from "../ui/ConfirmModal";
 import { ThemeToggle } from "../ui/ThemeToggle";
+import { useNotification } from "../../contexts/NotificationContext";
 
 const navItems = [
   { to: "/dashboard", label: "Dashboard", icon: Home },
@@ -39,18 +41,21 @@ function getDisplayNameFromEmail(email: string | undefined): string {
   return part.charAt(0).toUpperCase() + part.slice(1);
 }
 
-const MOBILE_HEADER_HEIGHT = 56;
 const SCROLL_DOWN_THRESHOLD = 50;
 const SCROLL_UP_THRESHOLD = 20;
 
 export const Layout = () => {
   const { isDark, toggleTheme } = useTheme();
   const { user, signOut } = useAuth();
+  const { showSuccess } = useNotification();
+  const location = useLocation();
+  const navigate = useNavigate();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [logoutConfirmOpen, setLogoutConfirmOpen] = useState(false);
   const [showMobileHeader, setShowMobileHeader] = useState(true);
   const lastScrollTop = useRef(0);
   const mainRef = useRef<HTMLElement>(null);
+  const welcomeShownRef = useRef(false);
 
   useEffect(() => {
     const el = mainRef.current;
@@ -73,6 +78,16 @@ export const Layout = () => {
   const displayName =
     (user?.user_metadata?.display_name as string | undefined)?.trim() ||
     getDisplayNameFromEmail(user?.email);
+
+  useEffect(() => {
+    if (location.state?.welcome && !welcomeShownRef.current && user) {
+      showSuccess(`Welcome back, ${displayName}`);
+      welcomeShownRef.current = true;
+      // Clear state so it doesn't show again on refresh
+      navigate(location.pathname, { replace: true, state: {} });
+    }
+  }, [location, displayName, showSuccess, navigate, user]);
+
   const initial = getInitial(displayName || user?.email);
 
   return (
@@ -149,15 +164,15 @@ export const Layout = () => {
       <div className="flex-1 flex flex-col min-w-0 min-h-screen lg:min-h-0">
         <header
           className={[
-            "z-20 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 sm:py-2.5 border-b border-[var(--border)] bg-[var(--card-bg)] shrink-0 transition-transform duration-300 ease-out",
+            "z-50 flex items-center gap-2 sm:gap-3 px-3 sm:px-4 py-2 border-b border-[var(--border)] bg-[var(--card-bg)] shrink-0 transition-transform duration-300 ease-out",
             "lg:sticky lg:top-0",
             "fixed top-0 left-0 right-0 lg:relative lg:left-auto lg:right-auto",
-            showMobileHeader ? "translate-y-0" : "-translate-y-full lg:translate-y-0",
+            showMobileHeader || mobileOpen ? "translate-y-0" : "-translate-y-full lg:translate-y-0",
           ].join(" ")}
         >
           <button
             type="button"
-            className="lg:hidden flex h-11 w-11 min-h-[44px] min-w-[44px] items-center justify-center rounded-lg border border-[var(--border)] text-[var(--text)] touch-manipulation"
+            className="lg:hidden flex h-9 w-9 min-h-[36px] min-w-[36px] items-center justify-center rounded-lg border border-[var(--border)] text-[var(--text)] touch-manipulation"
             onClick={() => setMobileOpen((o) => !o)}
             aria-label="Menu"
           >
@@ -167,7 +182,7 @@ export const Layout = () => {
             <img
               src={isDark ? "/favicon.svg" : "/logo-light.svg"}
               alt=""
-              className="h-8 w-8 shrink-0 rounded-lg object-contain"
+              className="h-7 w-7 shrink-0 rounded-lg object-contain"
             />
             <span className="font-semibold text-[var(--text)]">MyFinTrack</span>
           </div>
@@ -180,45 +195,62 @@ export const Layout = () => {
           </div>
         </header>
 
-        {showMobileHeader && (
-          <div className="lg:hidden h-14 shrink-0 pointer-events-none" aria-hidden />
-        )}
+        {/* Spacer for fixed header on mobile, hides when header hides (except when menu open) */}
+        <div 
+          className={`lg:hidden h-[53px] shrink-0 pointer-events-none transition-[margin-top] duration-300 ${showMobileHeader || mobileOpen ? '' : '-mt-[53px]'}`} 
+          aria-hidden 
+        />
 
         {mobileOpen && (
-          <nav className="lg:hidden border-b border-[var(--border)] bg-[var(--card-bg)] p-3 space-y-0.5">
-            {navItems.map(({ to, label, icon: Icon }) => (
-              <Link
-                key={to}
-                to={to}
-                onClick={() => setMobileOpen(false)}
-                className="flex items-center gap-3 rounded-lg px-3 py-3 min-h-[48px] text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--border)] hover:text-[var(--text)] touch-manipulation transition-colors"
-              >
-                <Icon className="h-4 w-4 shrink-0" />
-                {label}
-              </Link>
-            ))}
-            <div className="pt-2 mt-2 border-t border-[var(--border)] flex items-center gap-3 px-3 py-2">
-              <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-full border-2 border-[var(--border)] bg-[var(--page-bg)] text-[var(--text)] font-semibold text-sm ring-2 ring-primary/20">
-                {initial}
+          <>
+            <div className="fixed inset-0 z-40 bg-black/20 lg:hidden" onClick={() => setMobileOpen(false)} />
+            <nav className="fixed top-[53px] left-0 right-0 z-40 lg:hidden border-b border-[var(--border)] bg-[var(--card-bg)] p-3 space-y-0.5 max-h-[calc(100vh-53px)] overflow-y-auto shadow-xl">
+              {navItems.map(({ to, label, icon: Icon }) => (
+                <Link
+                  key={to}
+                  to={to}
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-3 py-2.5 min-h-[40px] text-sm font-medium text-[var(--text-muted)] hover:bg-[var(--border)] hover:text-[var(--text)] touch-manipulation transition-colors"
+                >
+                  <Icon className="h-4 w-4 shrink-0" />
+                  {label}
+                </Link>
+              ))}
+              <div className="pt-2 mt-2 border-t border-[var(--border)] px-3 py-2">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 border-[var(--border)] bg-[var(--page-bg)] text-[var(--text)] font-semibold text-sm ring-2 ring-primary/20">
+                    {initial}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-medium text-[var(--text)] truncate text-sm">
+                      {displayName}
+                    </p>
+                    <p className="text-xs text-[var(--text-muted)] truncate">
+                      {user?.email}
+                    </p>
+                  </div>
+                </div>
+                
+                <Link
+                  to="/settings"
+                  onClick={() => setMobileOpen(false)}
+                  className="flex items-center gap-3 rounded-lg px-2 py-2.5 mb-2 min-h-[40px] text-sm font-medium text-[var(--text)] hover:bg-[var(--border)] transition-colors touch-manipulation"
+                >
+                  <Settings className="h-4 w-4 shrink-0" />
+                  Account & settings
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setLogoutConfirmOpen(true)}
+                  className="w-full flex items-center justify-center gap-2 rounded-lg bg-red-600 py-2.5 min-h-[40px] text-sm font-medium text-white hover:bg-red-700 transition-colors touch-manipulation"
+                >
+                  <LogOut className="h-4 w-4" />
+                  Log out
+                </button>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-medium text-[var(--text)] truncate text-sm">
-                  {displayName}
-                </p>
-                <p className="text-xs text-[var(--text-muted)] truncate">
-                  {user?.email}
-                </p>
-              </div>
-            </div>
-            <button
-              type="button"
-              onClick={() => setLogoutConfirmOpen(true)}
-              className="w-full flex items-center justify-center gap-2 rounded-lg bg-red-600 py-3 min-h-[48px] text-sm font-medium text-white hover:bg-red-700 transition-colors touch-manipulation"
-            >
-              <LogOut className="h-4 w-4" />
-              Log out
-            </button>
-          </nav>
+            </nav>
+          </>
         )}
 
         <ConfirmModal

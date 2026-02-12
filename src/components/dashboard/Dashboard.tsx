@@ -219,7 +219,7 @@ export const Dashboard = () => {
           <h2 className="text-sm font-semibold text-[var(--text)] mb-3">
             Spending by category
           </h2>
-          <div className="h-56">
+          <div className="h-72 py-6">
             {spendingByCategory.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>

@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Pencil, Plus, Trash2, X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
+import { useNotification } from "../../contexts/NotificationContext";
 import { categoryService, type Category } from "../../services/categoryService";
 import {
   transactionService,
@@ -27,6 +28,7 @@ type UiTransaction = {
 
 export const TransactionList = () => {
   const { user } = useAuth();
+  const { showSuccess } = useNotification();
   const [transactions, setTransactions] = useState<UiTransaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [grossIncome, setGrossIncome] = useState<number | null>(null);
@@ -162,22 +164,26 @@ export const TransactionList = () => {
       const cat = categories.find(
         (c) => c.id === (created as { category_id: string }).category_id,
       );
-      setTransactions((prev) => [
-        {
-          id: created.id,
-          date: created.date,
-          description: created.description,
-          amount: created.amount,
-          type: created.type,
-          categoryId: catId,
-          categoryName: cat?.name ?? "Uncategorized",
-          receiptUrl,
-        },
-        ...prev,
-      ]);
+      const newTransaction: UiTransaction = {
+        id: created.id,
+        date: created.date,
+        description: created.description,
+        amount: created.amount,
+        type: created.type,
+        categoryId: catId,
+        categoryName: cat?.name ?? "Uncategorized",
+        receiptUrl,
+      };
+      // Add new transaction and sort by date (descending)
+      setTransactions((prev) => 
+        [newTransaction, ...prev].sort((a, b) => 
+          b.date.localeCompare(a.date)
+        )
+      );
       setAmount("");
       setDescription("");
       setReceiptFile(null);
+      showSuccess('Transaction added');
     } catch (err) {
       setError(
         err instanceof Error ? err.message : "Failed to add transaction.",

@@ -21,6 +21,7 @@ export type AuthCardProps = {
   error: string | null
   submitLabel: string
   footer: ReactNode
+  success?: string | null
   /** Sign up only: live password requirement errors */
   passwordErrors?: string[]
   /** Sign up only: hint text below password */
@@ -33,7 +34,7 @@ export type AuthCardProps = {
 }
 
 export function AuthCard({
-  mode,
+  mode: _mode,
   title,
   subtitle,
   email,
@@ -54,6 +55,7 @@ export function AuthCard({
   emailAutoComplete = 'email',
   passwordAutoComplete = 'current-password',
   passwordMinLength = 6,
+  success,
 }: AuthCardProps) {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/40 dark:from-[var(--page-bg)] dark:via-[var(--page-bg)] dark:to-[var(--page-bg)] p-4">
@@ -90,6 +92,13 @@ export function AuthCard({
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4, delay: 0.1 }}
           >
+            {/* Mobile Branding */}
+            <div className="flex flex-col items-center mb-8 md:hidden">
+              <div className="h-12 w-12 rounded-xl bg-primary/10 flex items-center justify-center mb-3 ring-1 ring-primary/20">
+                <img src="/favicon.svg" alt="" className="h-7 w-7" />
+              </div>
+              <span className="text-lg font-bold text-[var(--text)]">MyFinTrack</span>
+            </div>
             <h1 className="text-2xl md:text-3xl font-bold text-[var(--text)] mb-1">
               {title}
             </h1>
@@ -185,9 +194,10 @@ export function AuthCard({
                   type="submit"
                   disabled={loading}
                   className={cn(
-                    'w-full inline-flex items-center justify-center gap-2 rounded-lg bg-primary px-4 py-3 text-sm font-semibold text-white',
-                    'hover:bg-primary-hover transition-colors',
-                    'focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-[var(--card-bg)]',
+                    'w-full inline-flex items-center justify-center gap-2 rounded-lg px-4 py-3 text-sm font-semibold',
+                    'bg-blue-600 text-white hover:bg-blue-700 dark:bg-blue-600 dark:hover:bg-blue-700',
+                    'transition-colors',
+                    'focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 focus:ring-offset-[var(--card-bg)]',
                     'disabled:pointer-events-none disabled:opacity-50'
                   )}
                 >
@@ -195,6 +205,14 @@ export function AuthCard({
                   <ArrowRight className="h-4 w-4" />
                 </button>
               </motion.div>
+              {success && (
+                <div
+                  className="rounded-lg border border-green-200 bg-green-50 px-4 py-3 text-sm text-green-800 dark:border-green-900 dark:bg-green-950/50 dark:text-green-200 text-center font-medium"
+                  role="alert"
+                >
+                  {success}
+                </div>
+              )}
             </form>
 
             <div className="mt-6 text-center text-sm text-[var(--text-muted)]">

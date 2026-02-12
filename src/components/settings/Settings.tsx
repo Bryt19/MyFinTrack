@@ -36,6 +36,7 @@ export const Settings = () => {
   const [dateFormat, setDateFormat] = useState('MM/DD')
   const [startOfWeek, setStartOfWeek] = useState('sunday')
   const [emailReminders, setEmailReminders] = useState(false)
+  const [enableNotifications, setEnableNotifications] = useState(true)
   const [exportMessage, setExportMessage] = useState<string | null>(null)
 
   useEffect(() => {
@@ -64,6 +65,7 @@ export const Settings = () => {
           if (prefs.dateFormat) setDateFormat(prefs.dateFormat)
           if (prefs.startOfWeek) setStartOfWeek(prefs.startOfWeek)
           if (typeof prefs.emailReminders === 'boolean') setEmailReminders(prefs.emailReminders)
+          if (typeof prefs.enableNotifications === 'boolean') setEnableNotifications(prefs.enableNotifications)
         } catch (_) {}
       } catch (err) {
         const msg =
@@ -97,6 +99,7 @@ export const Settings = () => {
       dateFormat,
       startOfWeek,
       emailReminders,
+      enableNotifications,
     }))
     setMessage('Preferences saved.')
   }
@@ -281,7 +284,17 @@ export const Settings = () => {
             </select>
           </div>
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-3">
+            <input
+              type="checkbox"
+              id="enableNotifications"
+              checked={enableNotifications}
+              onChange={(e) => setEnableNotifications(e.target.checked)}
+              className="h-4 w-4 rounded border-[var(--border)] text-primary"
+            />
+            <label htmlFor="enableNotifications" className="text-sm font-medium text-[var(--text)]">Enable system notifications (e.g. Budget added)</label>
+          </div>
           <input
             type="checkbox"
             id="emailReminders"
