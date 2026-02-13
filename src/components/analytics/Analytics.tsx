@@ -4,7 +4,6 @@ import {
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   PieChart,
@@ -13,7 +12,6 @@ import {
   Legend,
   LineChart,
   Line,
-  ComposedChart,
 } from 'recharts'
 import { useAuth } from '../../contexts/AuthContext'
 import { transactionService } from '../../services/transactionService'
@@ -47,8 +45,9 @@ export const Analytics = () => {
         setTxList(txs)
         setBudgets(buds)
         setGoals(sav)
-      } catch (_) {}
-      finally { setLoading(false) }
+      } catch (err) {
+        console.error('Failed to load analytics data:', err)
+      } finally { setLoading(false) }
     }
     void load()
   }, [user])
@@ -172,10 +171,19 @@ export const Analytics = () => {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={monthlyData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
-                <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickFormatter={(v) => `${v}`} />
-                <Tooltip formatter={(v: number) => formatCurrency(v, currency)} contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text)' }} />
+                <XAxis 
+                  dataKey="month" 
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+                  axisLine={{ stroke: 'var(--border)' }}
+                  tickLine={false}
+                />
+                <YAxis 
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+                  tickFormatter={(v) => `${v}`} 
+                  axisLine={{ stroke: 'var(--border)' }}
+                  tickLine={false}
+                />
+                <Tooltip formatter={(v: any) => formatCurrency(Number(v ?? 0), currency)} contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text)' }} />
                 <Bar dataKey="income" fill="#059669" name="Income" radius={[4, 4, 0, 0]} />
                 <Bar dataKey="expenses" fill="#92400e" name="Expenses" radius={[4, 4, 0, 0]} />
               </BarChart>
@@ -187,10 +195,18 @@ export const Analytics = () => {
           <div className="h-64">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart data={monthlyData} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                <XAxis dataKey="month" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
-                <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickFormatter={(v) => `${v}`} />
-                <Tooltip formatter={(v: number) => formatCurrency(v, currency)} contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text)' }} />
+                <XAxis 
+                  dataKey="month" 
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+                  axisLine={{ stroke: 'var(--border)' }}
+                  tickLine={false}
+                />
+                <YAxis
+                  tick={{ fill: 'var(--text-muted)', fontSize: 11 }}
+                  axisLine={{ stroke: 'var(--border)' }}
+                  tickLine={false}
+                />
+                <Tooltip formatter={(v: any) => formatCurrency(Number(v ?? 0), currency)} contentStyle={tooltipStyle} labelStyle={{ color: 'var(--text)' }} />
                 <Line type="monotone" dataKey="balance" stroke="#2563eb" name="Balance" strokeWidth={2} dot={{ r: 3 }} />
               </LineChart>
             </ResponsiveContainer>
@@ -218,7 +234,7 @@ export const Analytics = () => {
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatCurrency(v, currency)} contentStyle={tooltipStyle} />
+                  <Tooltip formatter={(v: any) => formatCurrency(Number(v ?? 0), currency)} contentStyle={tooltipStyle} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -233,10 +249,21 @@ export const Analytics = () => {
             {spendingByCategory.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={spendingByCategory} layout="vertical" margin={{ top: 4, right: 24, left: 60, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis type="number" tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickFormatter={(v) => formatCurrency(v, currency)} />
-                  <YAxis type="category" dataKey="name" width={56} tick={{ fill: 'var(--text-muted)', fontSize: 11 }} />
-                  <Tooltip formatter={(v: number) => formatCurrency(v, currency)} contentStyle={tooltipStyle} />
+                  <XAxis 
+                    type="number" 
+                    tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+                    tickFormatter={(v) => formatCurrency(v, currency)} 
+                    axisLine={{ stroke: 'var(--border)' }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    type="category" 
+                    dataKey="name" 
+                    tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+                    axisLine={{ stroke: 'var(--border)' }}
+                    tickLine={false}
+                  />
+                  <Tooltip formatter={(v: any) => formatCurrency(Number(v ?? 0), currency)} contentStyle={tooltipStyle} />
                   <Bar dataKey="value" fill="#2563eb" radius={[0, 4, 4, 0]} name="Spent" />
                 </BarChart>
               </ResponsiveContainer>
@@ -267,7 +294,7 @@ export const Analytics = () => {
                       <Cell key={i} fill={CHART_COLORS[i % CHART_COLORS.length]} />
                     ))}
                   </Pie>
-                  <Tooltip formatter={(v: number) => formatCurrency(v, currency)} contentStyle={tooltipStyle} />
+                  <Tooltip formatter={(v: any) => formatCurrency(Number(v ?? 0), currency)} contentStyle={tooltipStyle} />
                   <Legend />
                 </PieChart>
               </ResponsiveContainer>
@@ -282,10 +309,19 @@ export const Analytics = () => {
             {savingsProgress.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={savingsProgress} margin={{ top: 8, right: 24, left: 0, bottom: 4 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                  <XAxis dataKey="name" tick={{ fill: 'var(--text-muted)', fontSize: 10 }} />
-                  <YAxis tick={{ fill: 'var(--text-muted)', fontSize: 11 }} tickFormatter={(v) => `${v}%`} />
-                  <Tooltip formatter={(v: number, _: string, item: { payload?: { current: number; target: number } }) => item.payload ? [formatCurrency(item.payload.current, currency) + ' / ' + formatCurrency(item.payload.target, currency), 'Progress'] : [v + '%', 'Progress']} contentStyle={tooltipStyle} />
+                  <XAxis 
+                    dataKey="name" 
+                    tick={{ fill: 'var(--text-muted)', fontSize: 10 }} 
+                    axisLine={{ stroke: 'var(--border)' }}
+                    tickLine={false}
+                  />
+                  <YAxis 
+                    tick={{ fill: 'var(--text-muted)', fontSize: 11 }} 
+                    tickFormatter={(v) => `${v}%`} 
+                    axisLine={{ stroke: 'var(--border)' }}
+                    tickLine={false}
+                  />
+                  <Tooltip formatter={(v: any, _name: any, item: any) => item.payload ? [formatCurrency(item.payload.current, currency) + ' / ' + formatCurrency(item.payload.target, currency), 'Progress'] : [String(v ?? 0) + '%', 'Progress']} contentStyle={tooltipStyle} />
                   <Bar dataKey="pct" fill="#059669" name="Progress %" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>

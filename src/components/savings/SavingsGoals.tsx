@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Plus, X, Pencil, Trash2 } from 'lucide-react'
+import { Plus, X, Pencil, Trash2, Search } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { savingsService, type SavingsGoal } from '../../services/savingsService'
 import { userSettingsService } from '../../services/userSettingsService'
@@ -15,6 +15,7 @@ export const SavingsGoals = () => {
   const [name, setName] = useState('')
   const [targetAmount, setTargetAmount] = useState('')
   const [deadline, setDeadline] = useState('')
+  const [search, setSearch] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -157,22 +158,35 @@ export const SavingsGoals = () => {
       setAdding(false)
     }
   }
+  const filteredGoals = goals.filter((g) => g.name.toLowerCase().includes(search.toLowerCase()))
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <header>
           <h1 className="text-xl font-semibold text-[var(--text)]">Savings goals</h1>
           <p className="text-sm text-[var(--text-muted)]">Set targets and track progress.</p>
         </header>
-        <button
-          type="button"
-          onClick={() => setOpen(true)}
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors shrink-0"
-        >
-          <Plus className="h-4 w-4" />
-          Add savings goal
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search goals..."
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--card-bg)] py-2 pl-9 pr-3 text-sm text-[var(--text)] transition-all focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => setOpen(true)}
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors shrink-0"
+          >
+            <Plus className="h-4 w-4" />
+            Add savings goal
+          </button>
+        </div>
       </div>
 
       {open && (
@@ -235,11 +249,11 @@ export const SavingsGoals = () => {
       )}
 
       <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6">
-        {goals.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">No goals yet. Use “Add savings goal” to create one.</p>
+        {filteredGoals.length === 0 ? (
+          <p className="text-sm text-[var(--text-muted)]">No savings goals found matching "{search}".</p>
         ) : (
           <ul className="space-y-0 text-sm">
-            {goals.map((g) => {
+            {filteredGoals.map((g) => {
               const pct = g.target_amount > 0 ? Math.min(100, (g.current_amount / g.target_amount) * 100) : 0
               return (
                 <li

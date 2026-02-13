@@ -129,6 +129,7 @@ CREATE TABLE IF NOT EXISTS budgets (
   period varchar(20) NOT NULL DEFAULT 'monthly',
   start_date date NOT NULL,
   end_date date NOT NULL,
+  description text,
   created_at timestamptz DEFAULT now(),
   CHECK (end_date >= start_date)
 );
@@ -310,6 +311,6 @@ CREATE TRIGGER savings_goals_updated_at
 ALTER TABLE user_settings ADD COLUMN IF NOT EXISTS red_line_amount numeric(12,2) CHECK (red_line_amount IS NULL OR red_line_amount >= 0);
 
 -- =============================================================================
--- 10. SEED: default categories for new users (run from app on first login if needed)
+-- 11. MIGRATION: add description to budgets
 -- =============================================================================
--- No seed here; app can insert default categories per user when they sign up.
+ALTER TABLE budgets ADD COLUMN IF NOT EXISTS description text;

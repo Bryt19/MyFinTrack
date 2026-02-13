@@ -9,8 +9,12 @@ export type UserSettings = {
   theme: 'light' | 'dark'
 }
 
+const settingsCache = new Map<string, UserSettings>()
+
 export const userSettingsService = {
   async getForUser(userId: string) {
+    if (settingsCache.has(userId)) return settingsCache.get(userId)!
+
     const { data, error } = await supabase
       .from('user_settings')
       .select('*')
@@ -18,7 +22,9 @@ export const userSettingsService = {
       .maybeSingle()
 
     if (error) throw error
-    return data as UserSettings | null
+    const result = data as UserSettings | null
+    if (result) settingsCache.set(userId, result)
+    return result
   },
 
   async upsert(userId: string, input: {
@@ -52,28 +58,32 @@ export const userSettingsService = {
     const { data, error } = await run(payloadFull)
 
     if (error) {
+      // ... (existing fallback logic kept for brevity)
       const msg = error.message ?? ''
-      // If red_line_amount or theme columns don't exist yet, try a safer payload
       const isMissingColumn = /column.*does not exist|unknown column/i.test(msg)
       
       if (isMissingColumn) {
-        // Try removing red_line_amount and theme if they fail
         const payloadSafe = { ...payloadFull } as any
         if (msg.includes('red_line_amount')) delete payloadSafe.red_line_amount
         if (msg.includes('theme')) delete payloadSafe.theme
         
         const { data: data2, error: error2 } = await run(payloadSafe)
         if (error2) {
-          // Final fallback to absolute minimum
           const { data: data3, error: error3 } = await run(payloadMinimal)
           if (error3) throw error3
-          return data3 as UserSettings
+          const res3 = data3 as UserSettings
+          settingsCache.set(userId, res3)
+          return res3
         }
-        return data2 as UserSettings
+        const res2 = data2 as UserSettings
+        settingsCache.set(userId, res2)
+        return res2
       }
       throw error
     }
-    return data as UserSettings
+    const res = data as UserSettings
+    settingsCache.set(userId, res)
+    return res
   },
 }
 

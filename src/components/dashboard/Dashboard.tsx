@@ -14,7 +14,6 @@ import {
   Bar,
   XAxis,
   YAxis,
-  CartesianGrid,
   Tooltip,
   ResponsiveContainer,
   PieChart,
@@ -44,7 +43,7 @@ const CHART_COLORS = [
   "#d97706",
   "#7c3aed",
   "#0891b2",
-  "#65a30d",
+  "#c4ab1fcc",
   "#be185d",
 ];
 
@@ -131,9 +130,11 @@ export const Dashboard = () => {
   }, [txList]);
 
   const gross = grossIncome ?? 0;
-  const totalBalance = gross + totalIncomeTx - totalExpenses;
-  const savingsRate =
-    gross > 0 ? Math.round(((gross - totalExpenses) / gross) * 100) : 0;
+  const { totalBalance, savingsRate } = useMemo(() => {
+    const bal = gross + totalIncomeTx - totalExpenses;
+    const rate = gross > 0 ? Math.round(((gross - totalExpenses) / gross) * 100) : 0;
+    return { totalBalance: bal, savingsRate: rate };
+  }, [gross, totalIncomeTx, totalExpenses]);
 
   const recentTx = useMemo(
     () => txList.slice(0, 5),
@@ -156,13 +157,21 @@ export const Dashboard = () => {
             Amounts in {currency}.
           </p>
         </div>
-        <Link
-          to="/transactions"
-          className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-transform active:scale-[0.98]"
-        >
-          <Plus className="h-4 w-4" />
-          Add transaction
-        </Link>
+        <div className="flex flex-wrap items-center gap-2">
+          <Link
+            to="/settings"
+            className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-4 py-2.5 text-sm font-medium text-[var(--text)] hover:bg-[var(--border)] shadow-sm transition-all active:scale-[0.98]"
+          >
+            Set gross income
+          </Link>
+          <Link
+            to="/transactions"
+            className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-[var(--text)] hover:bg-primary-hover shadow-md hover:shadow-lg transition-all active:scale-[0.98]"
+          >
+            <Plus className="h-4 w-4" />
+            Add transaction
+          </Link>
+        </div>
       </div>
 
       <section className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
@@ -219,7 +228,7 @@ export const Dashboard = () => {
           <h2 className="text-sm font-semibold text-[var(--text)] mb-3">
             Spending by category
           </h2>
-          <div className="h-72 py-6">
+          <div className="h-80 pt-6 pb-2">
             {spendingByCategory.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
@@ -260,18 +269,23 @@ export const Dashboard = () => {
           <h2 className="text-sm font-semibold text-[var(--text)] mb-3">
             Monthly overview
           </h2>
-          <div className="h-56">
+          <div className="h-80">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart
                 data={monthlyOverview}
-                margin={{ top: 8, right: 8, left: 0, bottom: 0 }}
+                margin={{ top: 10, right: 0, left: -20, bottom: 0 }}
+                barGap={8}
               >
-                <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
                 <XAxis
                   dataKey="month"
-                  tick={{ fill: "var(--text-muted)", fontSize: 11 }}
+                  axisLine={{ stroke: "var(--border)" }}
+                  tickLine={false}
+                  tick={{ fill: "var(--text-muted)", fontSize: 12, fontWeight: 500 }}
+                  dy={10}
                 />
                 <YAxis
+                  axisLine={{ stroke: "var(--border)" }}
+                  tickLine={false}
                   tick={{ fill: "var(--text-muted)", fontSize: 11 }}
                   tickFormatter={(v) => `${currency === "USD" ? "$" : ""}${v}`}
                 />
@@ -287,15 +301,17 @@ export const Dashboard = () => {
                 />
                 <Bar
                   dataKey="income"
-                  fill="#059669"
+                  fill="#10b981"
                   name="Income"
                   radius={[4, 4, 0, 0]}
+                  barSize={32}
                 />
                 <Bar
                   dataKey="expenses"
-                  fill="#92400e"
+                  fill="#ef4444"
                   name="Expenses"
                   radius={[4, 4, 0, 0]}
+                  barSize={32}
                 />
               </BarChart>
             </ResponsiveContainer>
@@ -384,14 +400,7 @@ export const Dashboard = () => {
         </div>
       </section>
 
-      <div>
-        <Link
-          to="/settings"
-          className="inline-flex items-center gap-2 rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-4 py-2.5 text-sm font-medium text-[var(--text)] hover:bg-[var(--border)] transition-transform active:scale-[0.98]"
-        >
-          Set gross income
-        </Link>
-      </div>
+
     </div>
   );
 };

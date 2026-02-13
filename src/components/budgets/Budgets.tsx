@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { Plus, X, Pencil, Trash2 } from 'lucide-react'
+import { Plus, X, Pencil, Trash2, Search } from 'lucide-react'
 import { useAuth } from '../../contexts/AuthContext'
 import { budgetService, type Budget } from '../../services/budgetService'
 import { categoryService, type Category } from '../../services/categoryService'
 import { userSettingsService } from '../../services/userSettingsService'
 import { formatCurrency } from '../../utils/formatCurrency'
+import { handleAmountInputChange, parseAmountFromDisplay } from '../../utils/amountInput'
 import { ConfirmModal } from '../ui/ConfirmModal'
 import { useNotification } from '../../contexts/NotificationContext'
 
@@ -28,6 +29,8 @@ export const Budgets = () => {
   const [categoryId, setCategoryId] = useState('')
   const [startDate, setStartDate] = useState(getMonthRange().start)
   const [endDate, setEndDate] = useState(getMonthRange().end)
+  const [description, setDescription] = useState('')
+  const [search, setSearch] = useState('')
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -37,6 +40,7 @@ export const Budgets = () => {
   const [editCategoryId, setEditCategoryId] = useState('')
   const [editStartDate, setEditStartDate] = useState('')
   const [editEndDate, setEditEndDate] = useState('')
+  const [editDescription, setEditDescription] = useState('')
   const [editSaving, setEditSaving] = useState(false)
   const [deleteTarget, setDeleteTarget] = useState<BudgetWithCategory | null>(null)
 
@@ -51,6 +55,7 @@ export const Budgets = () => {
       setBudgets(list as BudgetWithCategory[])
       setCategories(cats.filter((c) => c.type === 'expense'))
       if (settings?.currency) setCurrency(settings.currency)
+
       if (categoryId === '' && cats.filter((c) => c.type === 'expense')[0]) setCategoryId(cats.filter((c) => c.type === 'expense')[0].id)
     } catch (_) {}
   }
@@ -62,11 +67,12 @@ export const Budgets = () => {
     setError(null)
     setSaving(true)
     try {
-      const num = Number(amount)
+      const num = parseAmountFromDisplay(amount)
       if (!num || num <= 0) { setError('Enter a valid amount.'); return }
-      await budgetService.create({ userId: user.id, categoryId: categoryId || (categories[0]?.id ?? ''), amount: num, period: 'monthly', startDate, endDate })
+      await budgetService.create({ userId: user.id, categoryId: categoryId || (categories[0]?.id ?? ''), amount: num, period: 'monthly', startDate, endDate, description })
       setOpen(false)
       setAmount('')
+      setDescription('')
       showSuccess('Budget successfully added')
       void load()
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to add budget.') }
@@ -76,10 +82,11 @@ export const Budgets = () => {
   const openDetail = (b: BudgetWithCategory) => {
     setSelected(b)
     setEditMode(false)
-    setEditAmount(String(b.amount))
+    setEditAmount(b.amount.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 }))
     setEditCategoryId(b.category_id)
     setEditStartDate(b.start_date)
     setEditEndDate(b.end_date)
+    setEditDescription(b.description ?? '')
   }
 
   const handleEdit = async (e: React.FormEvent) => {
@@ -88,9 +95,9 @@ export const Budgets = () => {
     setEditSaving(true)
     setError(null)
     try {
-      const num = Number(editAmount)
+      const num = parseAmountFromDisplay(editAmount)
       if (!num || num <= 0) { setError('Enter a valid amount.'); return }
-      await budgetService.update(selected.id, { categoryId: editCategoryId, amount: num, startDate: editStartDate, endDate: editEndDate })
+      await budgetService.update(selected.id, { categoryId: editCategoryId, amount: num, startDate: editStartDate, endDate: editEndDate, description: editDescription })
       void load()
       setSelected(null)
     } catch (err) { setError(err instanceof Error ? err.message : 'Failed to update.') }
@@ -109,17 +116,33 @@ export const Budgets = () => {
 
   const totalBudget = budgets.reduce((sum, b) => sum + Number(b.amount), 0)
 
+  const filteredBudgets = budgets.filter((b) => {
+    return b.categories?.name.toLowerCase().includes(search.toLowerCase())
+  })
+
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <header>
           <h1 className="text-xl font-semibold text-[var(--text)]">Budgets</h1>
           <p className="text-sm text-[var(--text-muted)]">Set limits per category and track spending.</p>
         </header>
-        <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors shrink-0">
-          <Plus className="h-4 w-4" />
-          Add budget
-        </button>
+        <div className="flex flex-wrap items-center gap-3">
+          <div className="relative w-full sm:w-64">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+            <input
+              type="text"
+              value={search}
+              onChange={(e) => setSearch(e.target.value)}
+              placeholder="Search budgets..."
+              className="w-full rounded-lg border border-[var(--border)] bg-[var(--card-bg)] py-2 pl-9 pr-3 text-sm text-[var(--text)] transition-all focus:ring-2 focus:ring-primary/20"
+            />
+          </div>
+          <button type="button" onClick={() => setOpen(true)} className="inline-flex items-center gap-2 rounded-lg bg-primary px-4 py-2.5 text-sm font-medium text-white hover:bg-primary-hover transition-colors shrink-0">
+            <Plus className="h-4 w-4" />
+            Add budget
+          </button>
+        </div>
       </div>
       {open && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" onClick={() => setOpen(false)}>
@@ -138,18 +161,22 @@ export const Budgets = () => {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-[var(--text)]">Amount</label>
-                <input type="number" min="0" step="0.01" value={amount} onChange={(e) => setAmount(e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" required />
+                <input type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(handleAmountInputChange(amount, e.target.value))} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" placeholder="0.00" required />
               </div>
-              <div className="grid grid-cols-2 gap-3">
-                <div>
-                  <label className="mb-1 block text-sm font-medium text-[var(--text)]">Start date</label>
-                  <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" required />
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-[var(--text)]">Start date</label>
+                    <input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" required />
+                  </div>
+                  <div>
+                    <label className="mb-1 block text-sm font-medium text-[var(--text)]">End date</label>
+                    <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" required />
+                  </div>
                 </div>
                 <div>
-                  <label className="mb-1 block text-sm font-medium text-[var(--text)]">End date</label>
-                  <input type="date" value={endDate} onChange={(e) => setEndDate(e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" required />
+                  <label className="mb-1 block text-sm font-medium text-[var(--text)]">Description (optional)</label>
+                  <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} placeholder="Notes" className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" />
                 </div>
-              </div>
               <div className="flex gap-2 justify-end pt-2">
                 <button type="button" onClick={() => setOpen(false)} className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)]">Cancel</button>
                 <button type="submit" disabled={saving} className="rounded-lg bg-primary px-4 py-2 text-sm font-medium text-white hover:bg-primary-hover disabled:opacity-50">{saving ? 'Saving…' : 'Save'}</button>
@@ -160,12 +187,12 @@ export const Budgets = () => {
       )}
 
       <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-6">
-        {budgets.length === 0 ? (
-          <p className="text-sm text-[var(--text-muted)]">No budgets yet. Use “Add budget” to create one.</p>
+        {filteredBudgets.length === 0 ? (
+          <p className="text-sm text-[var(--text-muted)]">No budgets found matching "{search}".</p>
         ) : (
           <>
             <ul className="space-y-0 text-sm">
-              {budgets.map((b) => (
+              {filteredBudgets.map((b) => (
                 <li
                   key={b.id}
                   role="button"
@@ -206,7 +233,7 @@ export const Budgets = () => {
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-[var(--text)]">Amount</label>
-                  <input type="number" min="0" step="0.01" value={editAmount} onChange={(e) => setEditAmount(e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" required />
+                  <input type="text" inputMode="decimal" value={editAmount} onChange={(e) => setEditAmount(handleAmountInputChange(editAmount, e.target.value))} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" placeholder="0.00" required />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -217,6 +244,10 @@ export const Budgets = () => {
                     <label className="mb-1 block text-sm font-medium text-[var(--text)]">End date</label>
                     <input type="date" value={editEndDate} onChange={(e) => setEditEndDate(e.target.value)} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" required />
                   </div>
+                </div>
+                <div>
+                  <label className="mb-1 block text-sm font-medium text-[var(--text)]">Description (optional)</label>
+                  <textarea value={editDescription} onChange={(e) => setEditDescription(e.target.value)} rows={2} placeholder="Notes" className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" />
                 </div>
                 <div className="flex gap-2 justify-end pt-2">
                   <button type="button" onClick={() => setEditMode(false)} className="rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)]">Cancel</button>
@@ -229,6 +260,9 @@ export const Budgets = () => {
                   <div><dt className="text-[var(--text-muted)]">Category</dt><dd className="font-medium text-[var(--text)]">{selected.categories?.name ?? '—'}</dd></div>
                   <div><dt className="text-[var(--text-muted)]">Amount</dt><dd className="font-medium text-[var(--text)]">{formatCurrency(Number(selected.amount), currency)}</dd></div>
                   <div><dt className="text-[var(--text-muted)]">Period</dt><dd className="font-medium text-[var(--text)]">{selected.start_date} to {selected.end_date}</dd></div>
+                  {selected.description && (
+                    <div><dt className="text-[var(--text-muted)]">Description</dt><dd className="text-sm text-[var(--text)] whitespace-pre-wrap">{selected.description}</dd></div>
+                  )}
                 </dl>
                 <div className="flex gap-2 mt-5">
                   <button type="button" onClick={() => setEditMode(true)} className="inline-flex items-center gap-1.5 rounded-lg border border-[var(--border)] px-4 py-2 text-sm font-medium text-[var(--text)] hover:bg-[var(--border)]">

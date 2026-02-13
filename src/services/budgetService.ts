@@ -8,6 +8,7 @@ export type Budget = {
   period: string
   start_date: string
   end_date: string
+  description: string | null
 }
 
 export const budgetService = {
@@ -28,6 +29,7 @@ export const budgetService = {
     period: string
     startDate: string
     endDate: string
+    description?: string
   }) {
     const { data, error } = await supabase
       .from('budgets')
@@ -38,6 +40,7 @@ export const budgetService = {
         period: input.period,
         start_date: input.startDate,
         end_date: input.endDate,
+        description: input.description || null,
       }])
       .select()
       .single()
@@ -45,12 +48,13 @@ export const budgetService = {
     return data as Budget
   },
 
-  async update(id: string, input: { categoryId?: string; amount?: number; startDate?: string; endDate?: string }) {
+  async update(id: string, input: { categoryId?: string; amount?: number; startDate?: string; endDate?: string; description?: string | null }) {
     const body: Record<string, unknown> = {}
     if (input.categoryId != null) body.category_id = input.categoryId
     if (input.amount != null) body.amount = input.amount
     if (input.startDate != null) body.start_date = input.startDate
     if (input.endDate != null) body.end_date = input.endDate
+    if (input.description !== undefined) body.description = input.description
     const { data, error } = await supabase.from('budgets').update(body).eq('id', id).select().single()
     if (error) throw error
     return data as Budget

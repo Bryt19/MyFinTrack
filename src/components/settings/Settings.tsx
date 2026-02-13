@@ -19,6 +19,18 @@ const START_OF_WEEK = [
 ]
 const PREF_STORAGE_KEY = 'myfintrack_prefs'
 
+const formatWithCommas = (val: string) => {
+  if (!val) return ''
+  const clean = val.replace(/,/g, '')
+  if (clean === '.' || clean === '') return clean
+  const parts = clean.split('.')
+  if (parts.length > 2) return val // Invalid
+  parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',')
+  return parts.join('.')
+}
+
+const parseCommas = (val: string) => val.replace(/,/g, '')
+
 export const Settings = () => {
   const { user, signOut, updateDisplayName } = useAuth()
   const { isDark, setTheme } = useTheme()
@@ -55,10 +67,10 @@ export const Settings = () => {
           setSettings(existing)
           setCurrency(existing.currency ?? 'USD')
           setGrossIncome(
-            existing.gross_income != null ? String(existing.gross_income) : '',
+            existing.gross_income != null ? formatWithCommas(String(existing.gross_income)) : '',
           )
           setRedLineAmount(
-            existing.red_line_amount != null ? String(existing.red_line_amount) : '',
+            existing.red_line_amount != null ? formatWithCommas(String(existing.red_line_amount)) : '',
           )
         }
         const display =
@@ -120,8 +132,8 @@ export const Settings = () => {
       setError(null)
       setMessage(null)
 
-      const incomeNumber = grossIncome ? Number(grossIncome) : null
-      const redLine = redLineAmount ? Number(redLineAmount) : null
+      const incomeNumber = grossIncome ? Number(parseCommas(grossIncome)) : null
+      const redLine = redLineAmount ? Number(parseCommas(redLineAmount)) : null
       if (incomeNumber != null && incomeNumber < 0) {
         setError('Gross income cannot be negative.')
         return
@@ -234,11 +246,13 @@ export const Settings = () => {
           <div>
             <label className="mb-1 block text-sm font-medium text-[var(--text)]">Monthly gross income</label>
             <input
-              type="number"
-              min="0"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
               value={grossIncome}
-              onChange={(e) => setGrossIncome(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9.,]/g, '')
+                setGrossIncome(formatWithCommas(val))
+              }}
               placeholder="Total income before expenses"
               className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2.5 min-h-[44px] text-base text-[var(--text)] touch-manipulation"
             />
@@ -247,11 +261,13 @@ export const Settings = () => {
           <div>
             <label className="mb-1 block text-sm font-medium text-[var(--text)]">Red line amount (optional)</label>
             <input
-              type="number"
-              min="0"
-              step="0.01"
+              type="text"
+              inputMode="decimal"
               value={redLineAmount}
-              onChange={(e) => setRedLineAmount(e.target.value)}
+              onChange={(e) => {
+                const val = e.target.value.replace(/[^0-9.,]/g, '')
+                setRedLineAmount(formatWithCommas(val))
+              }}
               placeholder="Warn when remaining reaches this"
               className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2.5 min-h-[44px] text-base text-[var(--text)] touch-manipulation"
             />

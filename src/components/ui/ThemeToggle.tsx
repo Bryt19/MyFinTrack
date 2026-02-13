@@ -35,7 +35,7 @@ export function ThemeToggle({ checked, onChange, label }: ThemeToggleProps) {
         onMouseUp={() => setIsPressed(false)}
         onMouseLeave={() => setIsPressed(false)}
         className={cn(
-          'group relative h-6 w-10 sm:h-8 sm:w-14 rounded-full p-1 transition-all duration-500 ease-out',
+          'group relative h-5 w-9 rounded-full p-1 transition-all duration-500 ease-out',
           'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-[var(--card-bg)]',
           'touch-manipulation',
           checked ? 'bg-[var(--text)]' : 'bg-[var(--text-muted)]/20'
@@ -52,14 +52,14 @@ export function ThemeToggle({ checked, onChange, label }: ThemeToggleProps) {
         {/* Thumb */}
         <div
           className={cn(
-            'relative h-4 w-4 sm:h-6 sm:w-6 rounded-full shadow-lg transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]',
+            'relative h-3 w-3 rounded-full shadow-lg transition-all duration-500 ease-[cubic-bezier(0.68,-0.55,0.265,1.55)]',
             'bg-[var(--card-bg)]',
-            checked ? 'translate-x-4 sm:translate-x-6' : 'translate-x-0',
+            checked ? 'translate-x-4' : 'translate-x-0',
             isPressed ? 'scale-90 duration-150' : ''
           )}
         >
           {/* Thumb inner shine */}
-          <div className="absolute inset-[2px] rounded-full bg-gradient-to-b from-[var(--card-bg)] via-[var(--card-bg)] to-[var(--border)]" />
+          <div className="absolute inset-[1px] rounded-full bg-gradient-to-b from-[var(--card-bg)] via-[var(--card-bg)] to-[var(--border)]" />
 
           {/* Thumb highlight */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-br from-[var(--card-bg)]/80 via-transparent to-transparent" />
@@ -69,8 +69,8 @@ export function ThemeToggle({ checked, onChange, label }: ThemeToggleProps) {
             className={cn(
               'absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 rounded-full transition-all duration-500',
               checked
-                ? 'h-2 w-2 bg-[var(--text)] opacity-100 scale-100'
-                : 'h-1.5 w-1.5 bg-[var(--text-muted)]/40 opacity-100 scale-100'
+                ? 'h-1.5 w-1.5 bg-[var(--text)] opacity-100 scale-100'
+                : 'h-1 w-1 bg-[var(--text-muted)]/40 opacity-100 scale-100'
             )}
           />
         </div>

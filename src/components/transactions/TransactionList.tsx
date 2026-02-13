@@ -1,5 +1,5 @@
-import { useEffect, useState } from "react";
-import { Pencil, Plus, Trash2, X } from "lucide-react";
+import { useEffect, useState, useMemo } from "react";
+import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNotification } from "../../contexts/NotificationContext";
 import { categoryService, type Category } from "../../services/categoryService";
@@ -34,6 +34,7 @@ export const TransactionList = () => {
   const [grossIncome, setGrossIncome] = useState<number | null>(null);
   const [redLineAmount, setRedLineAmount] = useState<number | null>(null);
   const [currency, setCurrency] = useState("USD");
+  const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
@@ -54,14 +55,36 @@ export const TransactionList = () => {
   const [editSaving, setEditSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<UiTransaction | null>(null);
 
-  const totalExpenses = transactions
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const totalIncomeTx = transactions
-    .filter((t) => t.type === "income")
-    .reduce((sum, t) => sum + t.amount, 0);
-  const effectiveGross = grossIncome ?? 0;
-  const remaining = effectiveGross + totalIncomeTx - totalExpenses;
+  const { totalIncome, remaining, isRedLine } = useMemo(() => {
+    const expenses = transactions
+      .filter((t) => t.type === "expense")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const incomeTx = transactions
+      .filter((t) => t.type === "income")
+      .reduce((sum, t) => sum + t.amount, 0);
+    const income = (grossIncome ?? 0) + incomeTx;
+    const rem = income - expenses;
+    const redLine = redLineAmount != null && rem <= redLineAmount;
+
+    return {
+      totalExpenses: expenses,
+      totalIncomeTx: incomeTx,
+      totalIncome: income,
+      remaining: rem,
+      isRedLine: redLine,
+    };
+  }, [transactions, grossIncome, redLineAmount]);
+
+  const filteredTransactions = useMemo(() => {
+    const s = search.toLowerCase();
+    return transactions.filter((t) => {
+      return (
+        (t.description?.toLowerCase().includes(s) ?? false) ||
+        t.categoryName.toLowerCase().includes(s)
+      );
+    });
+  }, [transactions, search]);
+
 
   useEffect(() => {
     if (!user) return;
@@ -194,7 +217,6 @@ export const TransactionList = () => {
   };
 
   const typeCategories = categories.filter((c) => c.type === type);
-  const isRedLine = redLineAmount != null && remaining <= redLineAmount;
 
   const openEdit = (tx: UiTransaction) => {
     setEditing(tx);
@@ -285,49 +307,54 @@ export const TransactionList = () => {
 
   return (
     <div className="space-y-6">
-      <header>
-        <h1 className="text-xl font-semibold text-[var(--text)]">
-          Transactions
-        </h1>
-        <p className="text-sm text-[var(--text-muted)]">
-          Add and view income and expenses. Attach receipts (PNG, JPG, PDF).
-        </p>
+      <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+          <h1 className="text-xl font-semibold text-[var(--text)]">
+            Transactions
+          </h1>
+          <p className="text-sm text-[var(--text-muted)]">
+            Add and view income and expenses. Attach receipts (PNG, JPG, PDF).
+          </p>
+        </div>
+        <div className="relative w-full sm:w-64">
+          <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-[var(--text-muted)]" />
+          <input
+            type="text"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder="Search transactions..."
+            className="w-full rounded-lg border border-[var(--border)] bg-[var(--card-bg)] py-2 pl-9 pr-3 text-sm text-[var(--text)] transition-all focus:ring-2 focus:ring-primary/20"
+          />
+        </div>
       </header>
 
-      {/* Gross income & remaining */}
+      {/* Stats header */}
       <div className="rounded-xl border border-[var(--border)] bg-[var(--card-bg)] p-4">
         <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
           <div>
-            <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
-              Total gross income
-            </p>
+            <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">Total monthly income</p>
             <p className="mt-1 text-xl font-semibold text-income">
-              {grossIncome != null
-                ? formatCurrency(grossIncome, currency)
-                : "—"}
+              {formatCurrency(totalIncome, currency)}
             </p>
-            <p className="text-xs text-[var(--text-muted)]">Set in Settings</p>
+            <p className="text-xs text-[var(--text-muted)]">Gross + income transactions</p>
           </div>
           <div>
             <p className="text-xs font-medium uppercase tracking-wider text-[var(--text-muted)]">
-              Remaining
+              Remaining to budget
               {redLineAmount != null && (
                 <span className="ml-2 font-normal normal-case text-red-600 dark:text-red-400">
                   (Red line: {formatCurrency(redLineAmount, currency)})
                 </span>
               )}
             </p>
-            <p
-              className={`mt-1 text-xl font-semibold ${isRedLine ? "text-red-600 dark:text-red-400" : "text-[var(--text)]"}`}
-            >
+            <p className={`mt-1 inline-block rounded-lg px-3 py-1 text-xl font-semibold transition-colors ${isRedLine ? 'bg-red-600 text-white shadow-sm' : 'bg-neutral-800 text-white shadow-sm'}`}>
               {formatCurrency(remaining, currency)}
             </p>
-            <p className="text-xs text-[var(--text-muted)]">
-              Gross + income tx − expenses
-            </p>
+            <p className="text-xs text-[var(--text-muted)]">Total monthly income − actual expenses</p>
           </div>
         </div>
       </div>
+
 
       <form
         onSubmit={handleAdd}
@@ -449,7 +476,7 @@ export const TransactionList = () => {
               </tr>
             </thead>
             <tbody>
-              {transactions.map((tx) => (
+              {filteredTransactions.map((tx) => (
                 <tr
                   key={tx.id}
                   className="border-b border-[var(--border)] last:border-0 hover:bg-[var(--page-bg)]/50"
@@ -505,7 +532,7 @@ export const TransactionList = () => {
                   </td>
                 </tr>
               ))}
-              {!loading && transactions.length === 0 && (
+              {!loading && filteredTransactions.length === 0 && (
                 <tr>
                   <td
                     colSpan={6}
