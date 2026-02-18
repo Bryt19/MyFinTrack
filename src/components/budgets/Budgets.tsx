@@ -161,7 +161,7 @@ export const Budgets = () => {
               </div>
               <div>
                 <label className="mb-1 block text-sm font-medium text-[var(--text)]">Amount</label>
-                <input type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(handleAmountInputChange(amount, e.target.value))} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" placeholder="0.00" required />
+                <input type="text" inputMode="decimal" value={amount} onChange={(e) => setAmount(handleAmountInputChange(e.target.value))} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" placeholder="0.00" required />
               </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
@@ -233,7 +233,7 @@ export const Budgets = () => {
                 </div>
                 <div>
                   <label className="mb-1 block text-sm font-medium text-[var(--text)]">Amount</label>
-                  <input type="text" inputMode="decimal" value={editAmount} onChange={(e) => setEditAmount(handleAmountInputChange(editAmount, e.target.value))} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" placeholder="0.00" required />
+                  <input type="text" inputMode="decimal" value={editAmount} onChange={(e) => setEditAmount(handleAmountInputChange(e.target.value))} className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]" placeholder="0.00" required />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>

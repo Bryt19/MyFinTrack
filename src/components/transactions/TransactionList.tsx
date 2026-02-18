@@ -378,7 +378,7 @@ export const TransactionList = () => {
               inputMode="decimal"
               value={amount}
               onChange={(e) =>
-                setAmount(handleAmountInputChange(amount, e.target.value))
+                setAmount(handleAmountInputChange(e.target.value))
               }
               placeholder="0.00"
               className="w-full rounded-lg border border-[var(--border)] bg-[var(--page-bg)] px-3 py-2 text-sm text-[var(--text)]"
@@ -609,7 +609,7 @@ export const TransactionList = () => {
                     value={editAmount}
                     onChange={(e) =>
                       setEditAmount(
-                        handleAmountInputChange(editAmount, e.target.value),
+                        handleAmountInputChange(e.target.value),
                       )
                     }
                     placeholder="0.00"

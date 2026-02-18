@@ -417,7 +417,7 @@ export const SavingsGoals = () => {
                       inputMode="decimal"
                       value={addAmount}
                       onChange={(e) =>
-                        setAddAmount(handleAmountInputChange(addAmount, e.target.value))
+                        setAddAmount(handleAmountInputChange(e.target.value))
                       }
                       placeholder="0.00"
                       className="flex-1 min-w-[100px] rounded-lg border border-[var(--border)] bg-[var(--card-bg)] px-3 py-2 text-sm text-[var(--text)]"

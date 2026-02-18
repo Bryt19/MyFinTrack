@@ -29,7 +29,6 @@ export function parseAmountFromDisplay(display: string): number {
  * Returns the new display value.
  */
 export function handleAmountInputChange(
-  currentDisplay: string,
   nextValue: string,
 ): string {
   const next = nextValue.replace(/[^0-9.]/g, '')
