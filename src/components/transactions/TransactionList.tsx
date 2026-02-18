@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useRef } from "react";
+import { useNavigate } from "react-router-dom";
 import { Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import { useAuth } from "../../contexts/AuthContext";
 import { useNotification } from "../../contexts/NotificationContext";
@@ -29,6 +30,7 @@ type UiTransaction = {
 export const TransactionList = () => {
   const { user } = useAuth();
   const { showSuccess } = useNotification();
+  const navigate = useNavigate();
   const [transactions, setTransactions] = useState<UiTransaction[]>([]);
   const [categories, setCategories] = useState<Category[]>([]);
   const [grossIncome, setGrossIncome] = useState<number | null>(null);
@@ -37,6 +39,7 @@ export const TransactionList = () => {
   const [search, setSearch] = useState("");
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [incomeModalOpen, setIncomeModalOpen] = useState(false);
 
   const [amount, setAmount] = useState("");
   const [type, setType] = useState<TransactionType>("expense");
@@ -169,6 +172,12 @@ export const TransactionList = () => {
         setError("Enter a valid amount.");
         return;
       }
+
+      if (type === "expense" && (!grossIncome || grossIncome <= 0)) {
+        setIncomeModalOpen(true);
+        return;
+      }
+
       const catId =
         categoryId || (await categoryService.getUncategorizedId(user.id));
       let receiptUrl: string | null = null;
@@ -571,8 +580,9 @@ export const TransactionList = () => {
             </tbody>
           </table>
         )}
+      </div>
 
-        {editing && (
+      {editing && (
           <div
             className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50"
             onClick={() => setEditing(null)}
@@ -757,8 +767,19 @@ export const TransactionList = () => {
           description="This transaction will be removed. Totals will update. This cannot be undone."
           confirmLabel="Delete"
           variant="danger"
-        />
-      </div>
+      />
+
+      <ConfirmModal
+        open={incomeModalOpen}
+        onClose={() => setIncomeModalOpen(false)}
+        onConfirm={async () => {
+          setIncomeModalOpen(false);
+          navigate("/settings");
+        }}
+        title="Set monthly income first"
+        description="To track your finances accurately, please set your monthly gross income in your settings before adding transactions."
+        confirmLabel="Go to Settings"
+      />
     </div>
   );
 };
