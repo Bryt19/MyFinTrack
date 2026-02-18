@@ -55,23 +55,23 @@ const NotificationToast = ({
       animate={{ opacity: 1, y: 0, scale: 1 }}
       exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.2 } }}
       layout
-      className={`pointer-events-auto flex w-full max-w-[calc(100vw-2rem)] sm:max-w-xs items-start sm:items-center gap-2 sm:gap-3 rounded-lg border p-3 sm:p-4 shadow-lg ring-1 ring-black/5 ${
+      className={`pointer-events-auto flex w-full max-w-[calc(100vw-2rem)] sm:max-w-xs items-start sm:items-center gap-2 sm:gap-3 rounded-lg border-l-4 p-2.5 sm:p-4 shadow-2xl ring-1 ring-black/5 ${
         notification.type === "success"
-          ? "bg-white dark:bg-zinc-900 border-green-200 dark:border-green-900 text-green-800 dark:text-green-200"
-          : "bg-white dark:bg-zinc-900 border-red-200 dark:border-red-900 text-red-800 dark:text-red-200"
+          ? "bg-white dark:bg-zinc-900 border-emerald-500 dark:border-emerald-500 text-emerald-700 dark:text-emerald-300"
+          : "bg-white dark:bg-zinc-900 border-rose-500 dark:border-rose-500 text-rose-700 dark:text-rose-300"
       }`}
     >
       {notification.type === "success" ? (
-        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-green-500 dark:text-green-400 mt-0.5 sm:mt-0" />
+        <CheckCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-emerald-500 dark:text-emerald-400 mt-0.5 sm:mt-0" />
       ) : (
-        <XCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-red-500 dark:text-red-400 mt-0.5 sm:mt-0" />
+        <XCircle className="h-4 w-4 sm:h-5 sm:w-5 shrink-0 text-rose-500 dark:text-rose-400 mt-0.5 sm:mt-0" />
       )}
-      <p className="flex-1 text-xs sm:text-sm font-medium leading-5 sm:leading-none">{notification.message}</p>
+      <p className="flex-1 text-[11px] sm:text-sm font-semibold sm:font-medium leading-4 sm:leading-none">{notification.message}</p>
       <button
         onClick={() => onClose(notification.id)}
-        className="shrink-0 rounded-full p-1 opacity-70 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
+        className="shrink-0 rounded-full p-1 opacity-60 hover:opacity-100 hover:bg-black/5 dark:hover:bg-white/10 transition-colors"
       >
-        <X className="h-4 w-4" />
+        <X className="h-3.5 w-3.5 sm:h-4 sm:w-4 text-[var(--text-muted)] dark:text-white" />
       </button>
     </motion.div>
   );
@@ -89,19 +89,8 @@ export const NotificationProvider = ({ children }: { children: ReactNode }) => {
         const prefs = JSON.parse(
           localStorage.getItem(PREF_STORAGE_KEY) ?? "{}"
         );
-        // Default to true if not set? Or false? 
-        // User requested toggle "There should be an option... to enable". 
-        // Usually defaults to enabled. Let's assume enabled unless explicitly disabled (if toggle exists).
-        // But for "system notification", maybe consistent per user request.
-        // Assuming if pref is undefined, we show it (opt-out).
+       
         const enabled = prefs.enableNotifications !== false; // Default true
-        
-        // Critical errors might always show? User said "enable system notification... like new budget added".
-        // Errors "wrong credentials" usually show anyway. 
-        // I will force Show errors always? Or respect toggle?
-        // User: "When signing in... if wrong credentials, it should say... error". This is UI feedback, not just "system notification".
-        // But "system notification... like new budget added". This implies the toggle is for "success/info" notifications.
-        // I'll make errors ALWAYS show (UI feedback), success messages depend on preference.
         
         if (type === "success" && !enabled) return;
         

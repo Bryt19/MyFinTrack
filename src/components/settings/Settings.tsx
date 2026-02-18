@@ -193,7 +193,7 @@ export const Settings = () => {
 
   <p className="mt-1 text-xs text-[var(--text-muted)]">Shown in the sidebar and across the app. Saved to your account.</p>
   {nameMessage && (
-    <div className="mt-2 inline-block rounded-md bg-green-50 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-top-1">
+    <div className="mt-2 inline-block rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 border-l-2 border-emerald-500 shadow-sm animate-in fade-in slide-in-from-top-1">
       {nameMessage}
     </div>
   )}
@@ -202,7 +202,7 @@ export const Settings = () => {
             <button
               type="submit"
               disabled={savingName}
-              className="rounded-lg border border-primary px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary hover:text-white disabled:opacity-50 transition-colors min-h-[44px] touch-manipulation"
+              className="rounded-lg border border-primary px-4 py-2.5 text-sm font-medium text-primary disabled:opacity-50 transition-colors min-h-[44px] touch-manipulation"
             >
               {savingName ? 'Saving…' : 'Save name'}
             </button>
@@ -218,13 +218,13 @@ export const Settings = () => {
         <h2 className="text-lg font-semibold text-[var(--text)]">Financial defaults</h2>
         {loading && <p className="text-sm text-[var(--text-muted)]">Loading…</p>}
         {error && (
-          <div className="rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-red-800 dark:border-red-900 dark:bg-red-950/50 dark:text-red-200">
+          <div className="rounded-lg border-l-2 border-rose-500 bg-white px-3 py-2 text-sm font-semibold text-rose-700 shadow-sm">
             {error}
           </div>
         )}
         {/* Global message for data clear etc. */}
         {message && (
-          <div className="rounded-lg border border-green-200 bg-green-50 px-3 py-2 text-sm text-green-800 dark:border-green-900 dark:bg-green-950/50 dark:text-green-200">
+          <div className="rounded-lg border-l-2 border-emerald-500 bg-white px-3 py-2 text-sm font-semibold text-emerald-700 shadow-sm">
             {message}
           </div>
         )}
@@ -277,14 +277,14 @@ export const Settings = () => {
 
         <div className="flex items-center gap-3 justify-end">
           {financialMessage && (
-            <div className="inline-block rounded-md bg-green-50 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-right-1">
+            <div className="inline-block rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 border-l-2 border-emerald-500 shadow-sm animate-in fade-in slide-in-from-right-1">
               {financialMessage}
             </div>
           )}
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg border border-primary px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary hover:text-white disabled:opacity-50 transition-colors min-h-[44px] touch-manipulation"
+            className="rounded-lg border border-primary px-4 py-2.5 text-sm font-medium text-primary disabled:opacity-50 transition-colors min-h-[44px] touch-manipulation"
           >
             {saving ? 'Saving…' : 'Save changes'}
           </button>
@@ -354,14 +354,14 @@ export const Settings = () => {
         <p className="text-xs text-[var(--text-muted)]">Stored on this device. Email reminders are not yet implemented.</p>
         <div className="flex items-center gap-3 justify-end">
           {preferencesMessage && (
-            <div className="inline-block rounded-md bg-green-50 px-3 py-1 text-xs font-medium text-green-700 dark:bg-green-900/30 dark:text-green-400 border border-green-200 dark:border-green-800 animate-in fade-in slide-in-from-right-1">
+            <div className="inline-block rounded-lg bg-white px-3 py-1.5 text-xs font-semibold text-emerald-700 border-l-2 border-emerald-500 shadow-sm animate-in fade-in slide-in-from-right-1">
               {preferencesMessage}
             </div>
           )}
           <button
             type="button"
             onClick={savePreferences}
-            className="rounded-lg border border-primary px-4 py-2.5 text-sm font-medium text-primary hover:bg-primary hover:text-white transition-colors min-h-[44px] touch-manipulation"
+            className="rounded-lg border border-primary px-4 py-2.5 text-sm font-medium text-primary transition-colors min-h-[44px] touch-manipulation"
           >
             Save preferences
           </button>
@@ -375,7 +375,7 @@ export const Settings = () => {
         <button
           type="button"
           onClick={() => { setExportMessage('Export is not available yet.'); setTimeout(() => setExportMessage(null), 3000); }}
-          className="rounded-lg border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] hover:bg-[var(--border)] transition-colors min-h-[44px] touch-manipulation"
+          className="rounded-lg border border-[var(--border)] px-4 py-2.5 text-sm font-medium text-[var(--text)] transition-colors min-h-[44px] touch-manipulation"
         >
           Export my data
         </button>
@@ -399,14 +399,14 @@ export const Settings = () => {
           <button
             type="button"
             onClick={() => setClearDataModalOpen(true)}
-            className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 transition-colors min-h-[44px] touch-manipulation"
+            className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors min-h-[44px] touch-manipulation"
           >
             Clear all data
           </button>
           <button
             type="button"
             onClick={() => setDeleteAccountModalOpen(true)}
-            className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white hover:bg-red-700 transition-colors min-h-[44px] touch-manipulation"
+            className="rounded-lg bg-red-600 px-4 py-2.5 text-sm font-medium text-white transition-colors min-h-[44px] touch-manipulation"
           >
             Delete account
           </button>
