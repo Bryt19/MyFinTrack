@@ -10,6 +10,8 @@ type AuthContextValue = {
   signIn: (email: string, password: string) => Promise<Session | null>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  verifyOtp: (email: string, token: string, type: 'signup' | 'recovery' | 'email_change' | 'email' | 'invite') => Promise<Session | null>
+  resendOtp: (email: string, type: 'signup' | 'email_change') => Promise<void>
   updateDisplayName: (displayName: string) => Promise<void>
   deleteAccount: () => Promise<void>
 }
@@ -80,6 +82,24 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     if (error) throw error
   }
 
+  const verifyOtp = async (email: string, token: string, type: 'signup' | 'recovery' | 'email_change' | 'email' | 'invite') => {
+    const { data, error } = await supabase.auth.verifyOtp({
+      email,
+      token,
+      type,
+    })
+    if (error) throw error
+    return data.session
+  }
+
+  const resendOtp = async (email: string, type: 'signup' | 'email_change') => {
+    const { error } = await supabase.auth.resend({
+      email,
+      type,
+    })
+    if (error) throw error
+  }
+
   const updateDisplayName = async (displayName: string) => {
     const { data, error } = await supabase.auth.updateUser({
       data: { display_name: displayName.trim() || undefined },
@@ -103,6 +123,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         signIn,
         signOut,
         resetPassword,
+        verifyOtp,
+        resendOtp,
         updateDisplayName,
         deleteAccount,
       }}

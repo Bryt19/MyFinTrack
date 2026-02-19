@@ -4,7 +4,7 @@ import { motion } from 'framer-motion'
 
 const cn = (...classes: string[]) => classes.filter(Boolean).join(' ')
 
-export type AuthCardMode = 'signin' | 'signup' | 'forgot-password' | 'reset-password'
+export type AuthCardMode = 'signin' | 'signup' | 'forgot-password' | 'reset-password' | 'verify-email'
 
 export type AuthCardProps = {
   mode: AuthCardMode
@@ -35,6 +35,9 @@ export type AuthCardProps = {
   passwordFooter?: ReactNode
   confirmPassword?: string
   onConfirmPasswordChange?: (value: string) => void
+  otp?: string
+  onOtpChange?: (value: string) => void
+  onResendOtp?: () => void
 }
 
 export function AuthCard({
@@ -64,6 +67,9 @@ export function AuthCard({
   passwordFooter,
   confirmPassword,
   onConfirmPasswordChange,
+  otp,
+  onOtpChange,
+  onResendOtp,
 }: AuthCardProps) {
   return (
     <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/40 dark:from-[var(--page-bg)] dark:via-[var(--page-bg)] dark:to-[var(--page-bg)] p-4">
@@ -122,7 +128,7 @@ export function AuthCard({
                 </div>
               )}
 
-              {_mode !== 'reset-password' && (
+              {_mode !== 'reset-password' && _mode !== 'verify-email' && (
                 <div>
                   <label
                     htmlFor={emailId}
@@ -148,7 +154,7 @@ export function AuthCard({
                 </div>
               )}
 
-              {_mode !== 'forgot-password' && (
+              {_mode !== 'forgot-password' && _mode !== 'verify-email' && (
                 <div>
                   <label
                     htmlFor={passwordId}
@@ -244,6 +250,62 @@ export function AuthCard({
                         'disabled:opacity-50 disabled:cursor-not-allowed'
                       )}
                     />
+                  </div>
+                </div>
+              )}
+
+              {_mode === 'verify-email' && onOtpChange && (
+                <div>
+                  <label
+                    htmlFor="otp-input"
+                    className="block text-sm font-medium text-[var(--text)] mb-3 text-center"
+                  >
+                    Verification Code
+                  </label>
+                  <div className="flex justify-center gap-2 mb-4 relative">
+                    {/* Hidden actual input for focus and accessibility */}
+                    <input
+                      id="otp-input"
+                      type="text"
+                      inputMode="numeric"
+                      pattern="[0-9]*"
+                      maxLength={6}
+                      value={otp}
+                      onChange={(e) => onOtpChange(e.target.value.replace(/[^0-9]/g, '').slice(0, 6))}
+                      required
+                      autoFocus
+                      className="absolute inset-0 opacity-0 cursor-default"
+                    />
+                    
+                    {/* Visible digit boxes */}
+                    {[...Array(6)].map((_, i) => {
+                      const char = otp?.[i] || ''
+                      const isFocused = (otp?.length || 0) === i
+                      return (
+                        <div
+                          key={i}
+                          className={cn(
+                            'h-14 w-12 flex items-center justify-center text-2xl font-bold rounded-xl border transition-all duration-200 bg-[var(--page-bg)] text-[var(--text)]',
+                            isFocused 
+                              ? 'border-primary ring-2 ring-primary/20 scale-105' 
+                              : char 
+                                ? 'border-[var(--border)]' 
+                                : 'border-[var(--border)] opacity-60'
+                          )}
+                        >
+                          {char}
+                        </div>
+                      )
+                    })}
+                  </div>
+                  <div className="mt-4 text-center">
+                    <button
+                      type="button"
+                      onClick={onResendOtp}
+                      className="text-sm font-medium text-primary hover:underline focus:outline-none"
+                    >
+                      Didn&apos;t receive a code? Resend
+                    </button>
                   </div>
                 </div>
               )}
