@@ -7,6 +7,8 @@ import { AuthProvider } from './contexts/AuthContext'
 import { ThemeProvider } from './contexts/ThemeContext'
 import { NotificationProvider } from './contexts/NotificationContext'
 
+import { Analytics } from '@vercel/analytics/react'
+
 createRoot(document.getElementById('root') as HTMLElement).render(
   <StrictMode>
     <AuthProvider>
@@ -14,6 +16,7 @@ createRoot(document.getElementById('root') as HTMLElement).render(
         <NotificationProvider>
           <BrowserRouter>
             <App />
+            <Analytics />
           </BrowserRouter>
         </NotificationProvider>
       </ThemeProvider>

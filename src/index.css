@@ -15,6 +15,10 @@
   --expense: #92400e;
   --balance: #1e40af;
   --savings-rate: #7c3aed;
+  
+  /* Container Professionalism */
+  --shadow-professional: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1), 0 20px 25px -5px rgb(0 0 0 / 0.05);
+  --ring-light: 0 0 0 1px rgba(0, 0, 0, 0.05);
 }
 
 .dark {
@@ -31,6 +35,10 @@
   --expense: #d97706;
   --balance: #60a5fa;
   --savings-rate: #a78bfa;
+
+  /* Container Professionalism (Dark) */
+  --shadow-professional: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --ring-light: 0 0 0 1px rgba(255, 255, 255, 0.05);
 }
 
 html,

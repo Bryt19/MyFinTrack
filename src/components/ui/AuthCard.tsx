@@ -72,20 +72,23 @@ export function AuthCard({
   onResendOtp,
 }: AuthCardProps) {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-blue-50/40 dark:from-[var(--page-bg)] dark:via-[var(--page-bg)] dark:to-[var(--page-bg)] p-4">
+    <div className="min-h-screen w-full flex items-center justify-center bg-gradient-to-br from-slate-100 via-blue-50/30 to-slate-200 dark:from-[var(--page-bg)] dark:via-[var(--page-bg)] dark:to-[var(--page-bg)] p-4 md:p-6">
       <motion.div
-        initial={{ opacity: 0, scale: 0.98 }}
-        animate={{ opacity: 1, scale: 1 }}
-        transition={{ duration: 0.4 }}
-        className="w-full max-w-4xl overflow-hidden rounded-2xl flex flex-col md:flex-row bg-[var(--card-bg)] border border-[var(--border)] shadow-xl shadow-black/5 dark:shadow-none"
+        initial={{ opacity: 0, scale: 0.99, y: 10 }}
+        animate={{ opacity: 1, scale: 1, y: 0 }}
+        transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full max-w-4xl overflow-hidden rounded-[2rem] flex flex-col md:flex-row bg-[var(--card-bg)] border border-[var(--border)] shadow-[var(--shadow-professional)] ring-1 ring-black/[0.03] dark:ring-white/[0.03] relative z-10"
       >
         {/* Left: Branding */}
-        <div className="hidden md:flex md:w-1/2 min-h-[480px] flex-col items-center justify-center p-8 md:p-10 bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-blue-950/30 dark:to-indigo-950/30 border-r border-[var(--border)]">
+        <div className="hidden md:flex md:w-5/12 min-h-[520px] flex-col items-center justify-center p-12 bg-gradient-to-br from-blue-50/80 to-indigo-100/80 dark:from-blue-950/20 dark:to-indigo-950/20 border-r border-[var(--border)] relative overflow-hidden">
+          {/* Subtle background element */}
+          <div className="absolute top-0 right-0 w-32 h-32 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16 pointer-events-none" />
+          
           <motion.div
             initial={{ opacity: 0, y: -16 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.2, duration: 0.4 }}
-            className="flex flex-col items-center justify-center text-center"
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="flex flex-col items-center justify-center text-center relative z-10"
           >
             <div className="h-16 w-16 rounded-xl bg-primary/10 flex items-center justify-center mb-6 ring-2 ring-primary/20">
               <img src="/favicon.svg" alt="" className="h-9 w-9" />
@@ -93,8 +96,8 @@ export function AuthCard({
             <h2 className="text-2xl md:text-3xl font-bold text-[var(--text)] mb-2">
               MoneyGrid
             </h2>
-            <p className="text-sm text-[var(--text-muted)] max-w-xs">
-              Track income, expenses, budgets, and savings in one place. Take control of your money.
+            <p className="text-base text-[var(--text)] font-medium max-w-xs leading-relaxed">
+              Track income, expenses, budgets, and savings in one place. <span className="text-primary font-bold">Take control of your money.</span>
             </p>
           </motion.div>
         </div>
